@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tìm kiếm chỗ ngồi đại biểu</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; padding:24px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .card { background:white; border-radius:12px; box-shadow: 0 10px 30px rgba(0,0,0,.07); padding:24px; }
+  h1 { margin: 0 0 16px; text-align:center; font-size: 32px; }
+  .searchbar { display:flex; gap:8px; margin: 16px auto; max-width: 640px; }
+  .searchbar input { flex:1; padding:12px 14px; border:1px solid #d5d8e2; border-radius:8px; font-size:16px; }
+  .btn { padding:12px 18px; border:0; background:#2e7d32; color:white; border-radius:8px; font-size:16px; cursor:pointer; }
+  .btn:active { transform: translateY(1px); }
+  .result { background:#f9fafc; border:1px solid #e5e8f0; border-radius:10px; padding:16px; margin-top:16px; }
+  .item { padding:10px 12px; border-bottom:1px dashed #e4e7ef; }
+  .item:last-child { border-bottom:0; }
+  .name { font-weight:700; }
+  .seat { font-weight:700; color:#d35400; }
+  .muted { color:#667085; }
+  .hint { text-align:center; color:#667085; margin-top:8px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Tìm kiếm chỗ ngồi đại biểu</h1>
+    <div class="searchbar">
+      <input id="q" type="text" placeholder="Nhập tên đại biểu (không phân biệt hoa/thường)..." />
+      <button class="btn" onclick="doSearch()">Tìm kiếm</button>
+    </div>
+    <div class="hint">Gợi ý: có thể nhập một phần tên, ví dụ “<i>trọng cường</i>”.</div>
+    <div id="out" class="result"></div>
+  </div>
+</div>
+
+<script>
+const DATA = [{"name": "Hoàng Thị Dư  mầm non Vân Trung", "seat": "0-E"}, {"name": "Dương Thanh Hải  Tiểu học Vân Trung", "seat": "0-F"}, {"name": "Nguyễn Thị Duyên  (TDP Trúc Tay)", "seat": "0-G"}, {"name": "Tạ Thị Nga  (TDP Hoàng Mai 2", "seat": "0-H"}, {"name": "Nguyễn Thị Yến  Tiểu hoc Vân Trung", "seat": "0-I"}, {"name": "Nguyễn Văn Lợi  TDP Hoàng Mai 2", "seat": "0-J"}, {"name": "Phùng Thị Ngọc Anh", "seat": "1-A"}, {"name": "Nguyễn Bá Ngạn", "seat": "1-B"}, {"name": "Hoàng Thị Tấm mầm non Vân Trung", "seat": "1-E"}, {"name": "Lê Khắc Linh", "seat": "1-F"}, {"name": "Nguyễn Thị Ngoan", "seat": "1-G"}, {"name": "Nguyễn Thanh Long", "seat": "1-H"}, {"name": "Nguyễn Trọng Cường", "seat": "1-I"}, {"name": "Hoàng Công Huy", "seat": "1-J"}, {"name": "Vũ Thị Phương", "seat": "1-K"}, {"name": "Trần Hữu Đông", "seat": "1-L"}, {"name": "Đoàn Kim Tiền", "seat": "1-M"}, {"name": "Phùng Minh Nghị", "seat": "1-N"}, {"name": "Nguyễn Tiến Lợi", "seat": "1-O"}, {"name": "Nguyễn Huy Thanh", "seat": "2-A"}, {"name": "Thân Văn Hàng", "seat": "2-B"}, {"name": "Nguyễn Văn Lợi", "seat": "2-E"}, {"name": "Nguyễn Văn Dũng", "seat": "2-F"}, {"name": "Nguyễn Văn Đăng", "seat": "2-G"}, {"name": "Nguyễn Quang Huy", "seat": "2-H"}, {"name": "Nguyễn Văn Bắc", "seat": "2-I"}, {"name": "Hoàng Công Tùng", "seat": "2-J"}, {"name": "Đoàn Thị Quyên", "seat": "2-K"}, {"name": "Nguyễn Thị Tư", "seat": "2-L"}, {"name": "Nguyễn Hữu Tuyển", "seat": "2-M"}, {"name": "Nguyễn Văn Sinh", "seat": "2-N"}, {"name": "Dương Thị Sáu", "seat": "2-O"}, {"name": "Nguyễn Trong Chinh", "seat": "3-A"}, {"name": "Đinh Văn Tiến", "seat": "3-B"}, {"name": "Nguyễn Ngọc Sang", "seat": "3-E"}, {"name": "Nguyễn Thế Song", "seat": "3-F"}, {"name": "Hoàng Văn Thành", "seat": "3-G"}, {"name": "Trần Thế Nghĩa", "seat": "3-H"}, {"name": "Nguyễn Thị Lê", "seat": "3-I"}, {"name": "Nguyễn Văn Nghị", "seat": "3-J"}, {"name": "Đõ Văn Ngự", "seat": "3-K"}, {"name": "Nguyễn Văn Phượng", "seat": "3-L"}, {"name": "Thân Trọng Dũng", "seat": "3-M"}, {"name": "Lê Văn Suốt", "seat": "3-N"}, {"name": "Hoàng Văn Ngọ", "seat": "3-O"}, {"name": "Vũ Thế Bằng", "seat": "4-A"}, {"name": "Nguyễn Đình Môn", "seat": "4-B"}, {"name": "Nguyễn Thị Hiến", "seat": "4-E"}, {"name": "Đỗ Văn Quý", "seat": "4-F"}, {"name": "Nguyễn Văn Long", "seat": "4-G"}, {"name": "Ngô Đức Tuyên", "seat": "4-H"}, {"name": "Nguyễn Thị Phương", "seat": "4-I"}, {"name": "Trần Văn Hiệp", "seat": "4-J"}, {"name": "Nguyễn Thị Na", "seat": "4-K"}, {"name": "Lê Đình Ngọc", "seat": "4-L"}, {"name": "Đỗ Văn Hùng", "seat": "4-M"}, {"name": "Lê Văn Thiệu", "seat": "4-N"}, {"name": "Nguyễn Thị Huệ", "seat": "4-O"}, {"name": "Nguyễn Đức Hà", "seat": "5-A"}, {"name": "Nguyễn Xuân Bạn", "seat": "5-B"}, {"name": "Chu Bá Thuận", "seat": "5-E"}, {"name": "Thân Đức Xuyên", "seat": "5-F"}, {"name": "Hoàng Văn Nhận", "seat": "5-G"}, {"name": "Giáp Hà Tuyên", "seat": "5-H"}, {"name": "Đỗ Văn Hiển", "seat": "5-I"}, {"name": "Trần Quốc Tuấn", "seat": "5-J"}, {"name": "Phạm Quang Hùng", "seat": "5-K"}, {"name": "Nguyễn Thị Ngân Giang", "seat": "5-L"}, {"name": "Nguyễn Thị Nga", "seat": "5-M"}, {"name": "Lê Thị Thiết", "seat": "5-N"}, {"name": "Dương Văn Từ", "seat": "5-O"}, {"name": "Nguyễn Hữu Thắng", "seat": "6-A"}, {"name": "Thân Quang Phương", "seat": "6-B"}, {"name": "Nguyễn Văn Viễn", "seat": "6-C"}, {"name": "Lê Huy Hoàng", "seat": "6-E"}, {"name": "Thân Văn Xuân", "seat": "6-F"}, {"name": "Lê Thị Ngần", "seat": "6-G"}, {"name": "Nguyễn Văn Lực", "seat": "6-H"}, {"name": "Ngô Thế Hưng", "seat": "6-I"}, {"name": "Nguyễn Văn Hảo", "seat": "6-J"}, {"name": "Nguyễn Viết Tuấn", "seat": "6-K"}, {"name": "Đỗ Thị Huế", "seat": "6-L"}, {"name": "Nguyễn Thị Thu Trang", "seat": "6-M"}, {"name": "Nguyễn Văn Lâm", "seat": "6-N"}, {"name": "Đoàn Thế Trang", "seat": "6-O"}, {"name": "Tạ Văn Hùng", "seat": "7-A"}, {"name": "Nguyễn Thị Vân Anh", "seat": "7-B"}, {"name": "Nguyễn Ngọc Điệp", "seat": "7-C"}, {"name": "Vũ Mạnh Sơn", "seat": "7-D"}, {"name": "Nguyễn Văn Tú", "seat": "7-E"}, {"name": "Nguyễn Thái Dũng", "seat": "7-F"}, {"name": "Đoàn Văn Quang", "seat": "7-G"}, {"name": "Nguyễn Văn Hiền", "seat": "7-H"}, {"name": "Nguyễn Văn Dũng", "seat": "7-I"}, {"name": "Hoàng Công Trung", "seat": "7-J"}, {"name": "Thân Văn Quyền", "seat": "7-K"}, {"name": "Nguyễn Đức Sâm", "seat": "7-L"}, {"name": "Thân Văn Quý", "seat": "7-M"}, {"name": "Nguyễn Thị Hiền", "seat": "7-N"}, {"name": "Nguyễn Xuân Tường", "seat": "7-O"}, {"name": "Nguyễn Văn Mạnh", "seat": "8-A"}, {"name": "Lê Hoàng Bách", "seat": "8-B"}, {"name": "Đoàn Mạnh Chiến", "seat": "8-C"}, {"name": "Nguyễn Văn Hùng", "seat": "8-D"}, {"name": "Vũ Văn Hồng", "seat": "8-F"}, {"name": "Nguyễn Tiến Lương", "seat": "8-G"}, {"name": "Nguyễn Thị Yến", "seat": "8-H"}, {"name": "Nguyễn Minh Quyết", "seat": "8-I"}, {"name": "Hà Minh Vỹ", "seat": "8-J"}, {"name": "Trần Hữu Bình", "seat": "8-K"}, {"name": "Ngô Duy Dũng", "seat": "8-L"}, {"name": "Nguyễn Thị Mến", "seat": "8-M"}, {"name": "Lê Ngọc Hệ", "seat": "8-N"}, {"name": "Nguyễn Hữu Hiền", "seat": "8-O"}, {"name": "Lê Quốc Trung", "seat": "9-A"}, {"name": "Phạm Hữu Thường", "seat": "9-B"}, {"name": "Thân Thị Minh Nghĩa", "seat": "9-F"}, {"name": "Nguyễn Văn Lợi", "seat": "9-G"}, {"name": "Đinh Văn Hiền", "seat": "9-H"}, {"name": "Vũ Thị Minh Họa", "seat": "9-I"}, {"name": "Nguyễn Bá Khang", "seat": "9-J"}, {"name": "Chu Văn Cường", "seat": "9-K"}, {"name": "Đỗ Văn Diện", "seat": "9-L"}, {"name": "Trần Thị Lan", "seat": "9-M"}, {"name": "Thân Đức Ân", "seat": "9-N"}, {"name": "Hoàng Ngân Sơn", "seat": "9-O"}, {"name": "Lê Dức Hiền", "seat": "10-A"}, {"name": "Nguyễn Tài Hải", "seat": "10-B"}, {"name": "Nguyễn Văn Giang", "seat": "10-F"}, {"name": "Trần Thị Hương", "seat": "10-G"}, {"name": "Thân Văn Tiến", "seat": "10-H"}, {"name": "Nguyễn Thị Mơ", "seat": "10-I"}, {"name": "Nguyễn Đình Khang", "seat": "10-J"}, {"name": "Ngô Trí Thông", "seat": "10-K"}, {"name": "Đỗ Tiến Dụng", "seat": "10-L"}, {"name": "Nguyễn Thị Lựng", "seat": "10-M"}, {"name": "Lương Tuấn Đảm", "seat": "10-N"}, {"name": "Hoàng Tiến Dũng", "seat": "10-O"}, {"name": "Nguyễn Thanh Bình", "seat": "11-A"}, {"name": "Đặng Văn Long", "seat": "11-B"}, {"name": "Đinh Ngọc Tùng", "seat": "11-F"}, {"name": "Thân Thị Lan", "seat": "11-G"}, {"name": "Thân Quang Chiều", "seat": "11-H"}, {"name": "Nguyễn Văn Tám", "seat": "11-I"}, {"name": "Chu Thị Tuyến", "seat": "11-J"}, {"name": "Nguyễn Thu Hà", "seat": "11-K"}, {"name": "Đỗ Văn Vấn", "seat": "11-L"}, {"name": "Đỗ Văn Cảnh", "seat": "11-M"}, {"name": "Dương Văn Hải", "seat": "11-N"}, {"name": "Hoàng Công Thắng", "seat": "11-O"}, {"name": "Nguyễn Hồng Đức", "seat": "12-A"}, {"name": "Hoàng Minh Tú", "seat": "12-B"}, {"name": "Hoàng Thị Huyền", "seat": "12-F"}, {"name": "Đào Thị Chinh", "seat": "12-G"}, {"name": "Thân Thị Thảo", "seat": "12-H"}, {"name": "Nguyễn Thị Bích Thảo", "seat": "12-I"}, {"name": "Nguyễn Đình Khoa", "seat": "12-J"}, {"name": "Nguyễn Văn Hùng", "seat": "12-K"}, {"name": "Nguyễn Hữu Cử", "seat": "12-L"}, {"name": "Thân Văn Hữu", "seat": "12-M"}, {"name": "Hoàng Văn Khoa", "seat": "12-N"}, {"name": "Nguyễn Văn Huy", "seat": "12-O"}, {"name": "Nguyễn Quý Dương", "seat": "13-A"}, {"name": "Dương Ngô Tuân", "seat": "13-B"}, {"name": "Nguyễn Văn Chung", "seat": "13-F"}, {"name": "Thân Văn Học", "seat": "13-G"}, {"name": "Thân Văn Thiết", "seat": "13-H"}, {"name": "Nguyễn Thị Lại", "seat": "13-I"}, {"name": "Nguyễn Quang Hải", "seat": "13-J"}, {"name": "Nguyễn Văn Vỹ", "seat": "13-K"}, {"name": "Nguyễn Đức Hạnh", "seat": "13-L"}, {"name": "Thân Văn Hưng", "seat": "13-M"}, {"name": "Nguyễn Văn Huy", "seat": "13-N"}, {"name": "Thân Đức Hưởng", "seat": "13-O"}, {"name": "Nguyễn Văn Tình", "seat": "14-A"}, {"name": "Cán bộ kỹ thuật", "seat": "14-B"}, {"name": "Lê Văn Tiếp", "seat": "14-F"}, {"name": "Thân Văn Liền", "seat": "14-G"}, {"name": "Phan Thị Thành", "seat": "14-H"}, {"name": "Lê Văn Nguyên", "seat": "14-I"}, {"name": "Vũ Hữu Sáng", "seat": "14-J"}, {"name": "Dương Ngô Tuyển", "seat": "14-K"}, {"name": "Nguyễn Thị Năm", "seat": "14-L"}, {"name": "Hoàng Văn Tiếp", "seat": "14-M"}, {"name": "Nguyễn Thị Thọ", "seat": "14-N"}, {"name": "Nguyễn Văn Hạnh", "seat": "14-O"}];
+
+function normalize(str) {
+  return str.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
+}
+
+function doSearch() {
+  const q = document.getElementById('q').value.trim();
+  const out = document.getElementById('out');
+  if (!q) { out.innerHTML = '<div class="muted">Nhập tên để tìm kiếm…</div>'; return; }
+  const nq = normalize(q);
+  const hits = DATA.filter(r => normalize(r.name).includes(nq));
+  if (hits.length === 0) {
+    out.innerHTML = '<div>⚠️ Không tìm thấy đại biểu phù hợp.</div>';
+    return;
+  }
+  const rows = hits.map(r => `
+    <div class="item">
+      <div class="name">Họ và tên: ${r.name}</div>
+      <div>Vị trí: <span class="seat">${r.seat}</span></div>
+    </div>
+  `).join('');
+  out.innerHTML = rows;
+}
+
+document.getElementById('q').addEventListener('input', doSearch);
+document.getElementById('q').focus();
+</script>
+</body>
+</html>
